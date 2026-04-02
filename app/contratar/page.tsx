@@ -4,9 +4,10 @@ import { type ChangeEvent, type ReactNode, FormEvent, useState } from "react";
 import NavBar from "@/components/NavBar";
 
 const formatos = [
-  { value: "duo",   label: "Dúo" },
-  { value: "trio",  label: "Trío" },
-  { value: "banda", label: "Banda" },
+  { value: "duo",      label: "Dúo" },
+  { value: "trio",     label: "Trío" },
+  { value: "cuarteto", label: "Cuarteto" },
+  { value: "quinteto", label: "Quinteto" },
 ];
 
 const CIUDADES = [
@@ -67,7 +68,6 @@ const EMPTY_FORM = {
   direccion_espacio: "",
   tipo_solicitud: "elegir_formato",
   formato: "duo",
-  // formatos disponibles: duo, trio, banda
   incluye_visuales: false,
   incluye_tecnico_sonido: false,
   incluye_tecnico_luces: false,
@@ -239,7 +239,7 @@ export default function ContratarPage() {
                 </div>
 
                 <Field label="Hora del evento">
-                  <input className={INPUT} type="time" name="hora_evento" value={form.hora_evento} onChange={handleChange} />
+                  <input className={INPUT} type="time" name="hora_evento" value={form.hora_evento} onChange={handleChange} placeholder="20:00" />
                 </Field>
 
                 <div>

@@ -26,5 +26,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ message: "Estado actualizado" });
   }
 
+  if (body.pdf_generado) {
+    const colMap: Record<string, string> = {
+      presupuesto: "pdf_presupuesto_at",
+      rider: "pdf_rider_at",
+      ficha: "pdf_ficha_at",
+    };
+    const col = colMap[body.pdf_generado];
+    if (!col) return NextResponse.json({ message: "PDF desconocido" }, { status: 400 });
+    const now = new Date().toISOString();
+    db.prepare(`UPDATE solicitudes SET ${col} = ? WHERE id = ?`).run(now, params.id);
+    return NextResponse.json({ message: "PDF registrado" });
+  }
+
   return NextResponse.json({ message: "Nada que actualizar" }, { status: 400 });
 }

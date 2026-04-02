@@ -19,11 +19,21 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-
-  if (!body.nombre_programador || !body.email || !body.nombre_evento || !body.fecha_evento || !body.hora_evento || !body.nombre_espacio || !body.ciudad || !body.direccion_espacio) {
-    return NextResponse.json({ message: "Campos obligatorios incompletos" }, { status: 400 });
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: "Cuerpo de la petición inválido" }, { status: 400 });
   }
+
+  try {
+
+  if (!body.nombre_programador || !body.email || !body.nombre_evento || !body.fecha_evento || !body.nombre_espacio || !body.ciudad) {
+    return NextResponse.json({ message: "Campos obligatorios incompletos: nombre, email, evento, fecha, espacio y ciudad son requeridos" }, { status: 400 });
+  }
+  // Normalizamos campos opcionales que el INSERT necesita como no-null
+  if (!body.hora_evento) body.hora_evento = "Por determinar";
+  if (!body.direccion_espacio) body.direccion_espacio = "";
 
   const distancia = Number(body.distancia_madrid_km || 0);
   const db = await getDb();
@@ -106,4 +116,8 @@ export async function POST(request: Request) {
   );
 
   return NextResponse.json({ message: "¡Gracias! Tu solicitud ha sido recibida. En un máximo de 24 horas recibirás un desglose detallado por email.", solicitud: created }, { status: 201 });
+  } catch (err: any) {
+    console.error("[POST /api/solicitudes]", err);
+    return NextResponse.json({ message: err?.message || "Error interno al procesar la solicitud" }, { status: 500 });
+  }
 }

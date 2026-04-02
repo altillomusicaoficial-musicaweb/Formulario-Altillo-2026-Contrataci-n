@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["sql.js"],
+  experimental: {
+    serverComponentsExternalPackages: ["sql.js"]
+  },
   images: {
     remotePatterns: []
   },

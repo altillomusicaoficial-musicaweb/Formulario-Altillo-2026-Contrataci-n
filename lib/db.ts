@@ -146,6 +146,11 @@ function initTables(sqlDb: any) {
     );
   `);
 
+  // Migrations: add PDF tracking columns if they don't exist yet
+  try { sqlDb.run("ALTER TABLE solicitudes ADD COLUMN pdf_presupuesto_at TEXT"); } catch (_) { /* already exists */ }
+  try { sqlDb.run("ALTER TABLE solicitudes ADD COLUMN pdf_rider_at TEXT"); } catch (_) { /* already exists */ }
+  try { sqlDb.run("ALTER TABLE solicitudes ADD COLUMN pdf_ficha_at TEXT"); } catch (_) { /* already exists */ }
+
   const defaultRates = [
     ["formato_duo", 1200, "Voz + instrumento"],
     ["formato_trio", 1800, "Voz + 2 instrumentos"],
@@ -193,7 +198,10 @@ async function initDb(): Promise<Db> {
 
 export async function getDb(): Promise<Db> {
   if (!initPromise) {
-    initPromise = initDb();
+    initPromise = initDb().catch((err) => {
+      initPromise = null; // reset so next request retries
+      throw err;
+    });
   }
   return initPromise;
 }

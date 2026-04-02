@@ -30,7 +30,9 @@ async function obtenerTarifas(): Promise<Record<string, number>> {
 
 function obtenerPrecioFormato(formato: Formato, tarifas: Record<string, number>) {
   const clave = `formato_${formato}`;
-  return Number(tarifas[clave] ?? TARIFAS_BASE.formatos[formato].precio);
+  // Fallback: "banda" o cualquier formato desconocido → cuarteto
+  const precioBase = TARIFAS_BASE.formatos[formato]?.precio ?? TARIFAS_BASE.formatos.cuarteto.precio;
+  return Number(tarifas[clave] ?? precioBase);
 }
 
 function construirPresupuestoBase(datos: any, tarifas: Record<string, number>) {

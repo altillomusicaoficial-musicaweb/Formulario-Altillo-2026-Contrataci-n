@@ -20,6 +20,24 @@ const estadoLabel: Record<string, string> = {
   rechazado: "Rechazado"
 };
 
+function PdfDot({ generated, label }: { generated: boolean; label: string }) {
+  return (
+    <span
+      title={generated ? `${label} generado` : `${label} pendiente`}
+      style={{
+        display: "inline-block",
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: generated ? "#7ccb5d" : "rgba(255,255,255,0.15)",
+        border: generated ? "none" : "1px solid rgba(255,255,255,0.2)",
+        marginRight: 3,
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
 export default function AdminPage() {
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
   const [estadoFilter, setEstadoFilter] = useState<string>("");
@@ -44,7 +62,7 @@ export default function AdminPage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
           <div>
             <h1 className="page-title">Panel Admin</h1>
-            <p className="page-subtitle">Gestiona solicitudes, presupuestos, riders y finanzas.</p>
+            <p className="page-subtitle">Solicitudes de contratación · genera presupuestos, riders y fichas en un clic.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/admin/tarifas" className="btn-ghost">Tarifas</Link>
@@ -54,7 +72,7 @@ export default function AdminPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <span className="text-xs uppercase tracking-widest text-white/40" style={{ fontFamily: "Oswald, sans-serif" }}>Estado</span>
           <div className="flex flex-wrap gap-2">
             {[
@@ -81,6 +99,19 @@ export default function AdminPage() {
               </button>
             ))}
           </div>
+
+          {/* PDF legend */}
+          <div className="ml-auto flex items-center gap-3 text-xs text-white/30" style={{ fontFamily: "DM Sans, sans-serif" }}>
+            <span className="flex items-center gap-1">
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#7ccb5d" }} />
+              PDF generado
+            </span>
+            <span className="flex items-center gap-1">
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }} />
+              Pendiente
+            </span>
+            <span className="opacity-60">P = Presupuesto · R = Rider · F = Ficha</span>
+          </div>
         </div>
 
         {/* Table */}
@@ -96,15 +127,17 @@ export default function AdminPage() {
                     <th>Programador</th>
                     <th>Evento</th>
                     <th>Fecha evento</th>
-                    <th>Tipo</th>
+                    <th>Ciudad</th>
+                    <th>Formato</th>
                     <th>Estado</th>
+                    <th title="PDFs generados: Presupuesto · Rider · Ficha">PDFs</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {solicitudes.map((s) => (
                     <tr key={s.id}>
-                      <td style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.8rem" }}>
+                      <td style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
                         {new Date(s.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "2-digit" })}
                       </td>
                       <td>
@@ -112,14 +145,29 @@ export default function AdminPage() {
                         <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>{s.email}</div>
                       </td>
                       <td className="font-medium">{s.nombre_evento}</td>
-                      <td style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem" }}>{s.fecha_evento}</td>
+                      <td style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{s.fecha_evento}</td>
+                      <td style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.85rem" }}>{s.ciudad}</td>
                       <td style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", textTransform: "capitalize" }}>
-                        {s.tipo_solicitud === "presupuesto_cerrado" ? "Ppto. cerrado" : "Elegir formato"}
+                        {s.formato
+                          ? s.formato
+                          : s.tipo_solicitud === "presupuesto_cerrado"
+                          ? <span style={{ color: "#C5A55A", fontSize: "0.75rem" }}>€{s.presupuesto_disponible}</span>
+                          : "—"}
                       </td>
                       <td>
                         <span className={`badge ${estadoColor[s.estado] || "badge-rechazado"}`}>
                           {estadoLabel[s.estado] || s.estado}
                         </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-0.5" style={{ minWidth: 48 }}>
+                          <PdfDot generated={!!s.pdf_presupuesto_at} label="Presupuesto" />
+                          <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", marginRight: 4 }}>P</span>
+                          <PdfDot generated={!!s.pdf_rider_at} label="Rider" />
+                          <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", marginRight: 4 }}>R</span>
+                          <PdfDot generated={!!s.pdf_ficha_at} label="Ficha" />
+                          <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.3)" }}>F</span>
+                        </div>
                       </td>
                       <td>
                         <Link
