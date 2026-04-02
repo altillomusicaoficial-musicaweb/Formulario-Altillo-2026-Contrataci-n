@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"getDb\\\\|Database\\\\|db\\\\.prepare\\\\|db\\\\.exec\\\\|db\\\\.pragma\" /c/Users/david/altillo-app/app/admin/*.tsx)",
+      "WebFetch(domain:www.altillomusica.com)",
+      "Bash(npx next:*)",
+      "Bash(npm i:*)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /PID 30128)",
+      "Bash(npx --prefix \"c:/Users/david/altillo-app\" kill-port 3000)"
+    ]
+  }
+}
