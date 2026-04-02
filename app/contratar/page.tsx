@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 const formatos = [
   { value: "duo",      label: "Dúo" },
   { value: "trio",     label: "Trío" },
+  { value: "banda",    label: "Banda" },
   { value: "cuarteto", label: "Cuarteto" },
   { value: "quinteto", label: "Quinteto" },
 ];

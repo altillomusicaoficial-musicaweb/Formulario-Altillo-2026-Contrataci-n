@@ -6,6 +6,7 @@ export const TARIFAS_BASE = {
   formatos: {
     duo: { precio: 1200, descripcion: "Voz + instrumento" },
     trio: { precio: 1800, descripcion: "Voz + 2 instrumentos" },
+    banda: { precio: 2400, descripcion: "Formación completa" },
     cuarteto: { precio: 2400, descripcion: "Voz + 3 instrumentos" },
     quinteto: { precio: 3000, descripcion: "Voz + 4 instrumentos" }
   },

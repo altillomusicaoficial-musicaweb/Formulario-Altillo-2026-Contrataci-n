@@ -118,30 +118,38 @@ export async function POST(request: Request) {
   // Enviar a Google Sheets (fire & forget — no bloquea la respuesta al promotor)
   const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK;
   if (webhookUrl) {
+    const payload = {
+      fecha_solicitud: new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" }),
+      nombre_programador: created.nombre_programador,
+      email: created.email,
+      telefono: created.telefono || "",
+      nombre_evento: created.nombre_evento,
+      fecha_evento: created.fecha_evento,
+      hora_evento: created.hora_evento,
+      nombre_espacio: created.nombre_espacio,
+      ciudad: created.ciudad,
+      direccion_espacio: created.direccion_espacio,
+      distancia_madrid_km: created.distancia_madrid_km,
+      formato: created.formato || (body.tipo_solicitud === "presupuesto_cerrado" ? `Presupuesto cerrado: ${body.presupuesto_disponible}€` : ""),
+      incluye_tecnico_sonido: created.incluye_tecnico_sonido,
+      incluye_tecnico_luces: created.incluye_tecnico_luces,
+      incluye_visuales: created.incluye_visuales,
+      incluye_equipo_tecnico_completo: created.incluye_equipo_tecnico_completo,
+      hospedaje_incluido: created.hospedaje_incluido,
+      presupuesto_total: presupuesto.total ?? ""
+    };
+    // Google Apps Script hace redirect 302 — enviamos con redirect:follow y reintento GET si falla POST
     fetch(webhookUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fecha_solicitud: new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" }),
-        nombre_programador: created.nombre_programador,
-        email: created.email,
-        telefono: created.telefono || "",
-        nombre_evento: created.nombre_evento,
-        fecha_evento: created.fecha_evento,
-        hora_evento: created.hora_evento,
-        nombre_espacio: created.nombre_espacio,
-        ciudad: created.ciudad,
-        direccion_espacio: created.direccion_espacio,
-        distancia_madrid_km: created.distancia_madrid_km,
-        formato: created.formato || (body.tipo_solicitud === "presupuesto_cerrado" ? `Presupuesto cerrado: ${body.presupuesto_disponible}€` : ""),
-        incluye_tecnico_sonido: created.incluye_tecnico_sonido,
-        incluye_tecnico_luces: created.incluye_tecnico_luces,
-        incluye_visuales: created.incluye_visuales,
-        incluye_equipo_tecnico_completo: created.incluye_equipo_tecnico_completo,
-        hospedaje_incluido: created.hospedaje_incluido,
-        presupuesto_total: presupuesto.total ?? ""
-      })
-    }).catch((e) => console.error("[Google Sheets webhook]", e.message));
+      headers: { "Content-Type": "text/plain" }, // text/plain evita CORS preflight
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    }).then(r => {
+      if (!r.ok) console.error("[Sheets] respuesta no-ok:", r.status);
+      else console.log("[Sheets] fila registrada OK");
+    }).catch((e) => console.error("[Sheets] error:", e.message));
+  } else {
+    console.warn("[Sheets] GOOGLE_SHEETS_WEBHOOK no configurado");
   }
 
   return NextResponse.json({ message: "¡Gracias! Tu solicitud ha sido recibida. En un máximo de 24 horas recibirás un desglose detallado por email.", solicitud: created }, { status: 201 });
